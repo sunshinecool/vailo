@@ -60,3 +60,6 @@ Bootable image is stored in `target/x86_64-vailo/debug/`
 ## Running 
 Run the bootable kernel
 `cargo xrun`
+
+## Output
+![Kernel display](./vailo.png)
