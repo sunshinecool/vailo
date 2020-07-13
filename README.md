@@ -1,4 +1,4 @@
-# vailok
+# vailo
 Cloud native OS written in Rust
 
 ## Environment setup
