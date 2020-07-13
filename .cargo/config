@@ -1,5 +1,5 @@
 [build]
-target = "x86_64-vailok.json"
+target = "x86_64-vailo.json"
 
 [target.'cfg(target_os = "none")']
 runner = "bootimage runner"
