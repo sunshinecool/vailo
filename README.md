@@ -63,3 +63,4 @@ Run the bootable kernel
 
 ## Output
 ![Kernel display](./vailo.png)
+As you can see, I have implemented page scroll. see - `src/vga_buffer.rs`
