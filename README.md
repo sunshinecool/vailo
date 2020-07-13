@@ -23,6 +23,14 @@ $ curl https://sh.rustup.rs -sSf | sh
 Make sure you have cargo, rustup in PATH.
 (Add `source $HOME/.cargo/env` to shell config (`~/.bash_profiles` or `~/.zshrc`)
 
+We use some experimental features present only in nightly release of Rust. We can 
+manage nightly releases using rustup
+`rustup toolchain install nightly`
+set nightly build as default
+`rustup default nightly`
+You can verify that nightly is the used rust version using 
+`rustup show`
+
 #### Install project dependencies
 ##### xbuild for building without stdlib
 ```
