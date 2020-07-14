@@ -9,7 +9,8 @@ use core::panic::PanicInfo;
  */
 #[no_mangle] // don't mangle the name of this function
 pub extern "C" fn _start() -> ! {
-    vga_buffer::print_something();
+    println!("Loading Vailo...");
+
     loop {}
 }
 

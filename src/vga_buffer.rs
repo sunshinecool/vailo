@@ -56,9 +56,11 @@ struct ScreenChar {
 const BUFFER_HEIGHT: usize = 25;
 const BUFFER_WIDTH: usize = 80;
 
+use volatile::Volatile;
+
 #[repr(transparent)]
 struct Buffer {
-    chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HEIGHT],
+    chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HEIGHT],
 }
 
 pub struct Writer {
@@ -80,7 +82,7 @@ impl Writer {
         }; 
 
         for col in 0..BUFFER_WIDTH {
-            self.buffer.chars[row][col] = blank;
+            self.buffer.chars[row][col].write(blank);
         }
     }
 
@@ -89,8 +91,8 @@ impl Writer {
         if self.row_pos + 1 == BUFFER_HEIGHT {
             for x in 1..BUFFER_HEIGHT {
                 for y in 0..BUFFER_WIDTH {
-                    let ch = self.buffer.chars[x][y];
-                    self.buffer.chars[x-1][y] = ch;
+                    let ch = self.buffer.chars[x][y].read();
+                    self.buffer.chars[x-1][y].write(ch);
                 }
             }
             self.clear_row(BUFFER_HEIGHT - 1);
@@ -109,10 +111,10 @@ impl Writer {
                     self.new_line();
                 }
 
-                self.buffer.chars[self.row_pos][self.col_pos] = ScreenChar {
+                self.buffer.chars[self.row_pos][self.col_pos].write(ScreenChar {
                     ascii_character: byte,
                     color: self.color
-                };
+                });
 
                 self.col_pos += 1;
 
@@ -132,20 +134,42 @@ impl Writer {
     }
 }
 
+use core::fmt;
 
-pub fn print_something() {
-    let mut writer = Writer {
+impl fmt::Write for Writer {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.write_string(s);
+        Ok(())
+    }
+}
+
+use lazy_static::lazy_static;
+use spin::Mutex;
+
+lazy_static! {
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
         col_pos: 0,
         row_pos: 0,
         color: ColorCode::new(Color::Yellow, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    };
-
-    for ch in 65u8..100u8 {
-        writer.write_byte(ch);
-        writer.write_byte(b'\n');
-    }
-    writer.write_byte(b'H');
-    writer.write_string("ello ");
-    writer.write_string("Wörld!");
+    });
 }
+
+
+#[macro_export]
+macro_rules! print {
+    ($($arg:tt)*) => ($crate::vga_buffer::_print(format_args!($($arg)*)));
+}
+
+#[macro_export]
+macro_rules! println {
+    () => ($crate::print!("\n"));
+    ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
+}
+
+#[doc(hidden)]
+pub fn _print(args: fmt::Arguments) {
+    use core::fmt::Write;
+    WRITER.lock().write_fmt(args).unwrap();
+}
+
