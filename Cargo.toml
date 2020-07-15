@@ -6,14 +6,36 @@ edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[[test]]
+name = "should_panic"
+harness = false
+
 [dependencies]
 bootloader = "0.9.3"
 volatile = "0.2.6"
 spin = "0.5.2"
+x86_64 = "0.11.0"
+uart_16550 = "0.2.0"
 
 [dependencies.lazy_static]
 version = "1.0"
 features = ["spin_no_std"]
+
+# For shutdown OS after running tests
+# Together with the device name (isa-debug-exit), 
+# we pass the two parameters iobase and iosize that 
+# specify the I/O port through which the device can
+# be reached from our kernel.
+# see - https://os.phil-opp.com/testing/#using-the-exit-device
+# To see the serial output from QEMU, we need use the -serial 
+# argument to redirect the output to stdout: see - src/serial.rs
+# -display none is used because we don't need qemu in tests
+[package.metadata.bootimage]
+test-args = [
+    "-device", "isa-debug-exit,iobase=0xf4,iosize=0x04", "-serial", "stdio",
+    "-display", "none"
+]
+test-success-exit-code = 33
 
 # the profile used for `cargo build`
 [profile.dev]
