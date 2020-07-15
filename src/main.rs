@@ -14,10 +14,15 @@ use vailo::println;
 #[no_mangle] // don't mangle the name of this function
 pub extern "C" fn _start() -> ! {
     println!("Loading Vailo...");
+    vailo::init(); // new
 
     #[cfg(test)]
     test_main();
 
+    // invoke a breakpoint exception
+    x86_64::instructions::interrupts::int3(); // new
+
+    println!("It did not crash!");
     loop {}
 }
 
