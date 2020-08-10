@@ -14,7 +14,7 @@ use vailo::println;
 #[no_mangle] // don't mangle the name of this function
 pub extern "C" fn _start() -> ! {
     println!("Loading Vailo...");
-    vailo::init(); // new
+    vailo::init();
 
     #[cfg(test)]
     test_main();
@@ -34,7 +34,10 @@ pub extern "C" fn _start() -> ! {
     //// invoke a breakpoint exception
     //x86_64::instructions::interrupts::int3(); // new
 
-    loop {}
+    //loop {}
+
+    println!("It did not crash!");
+    vailo::hlt_loop();
 }
 
 #[cfg(test)]
@@ -51,7 +54,7 @@ fn trivial_assertion() {
 // This function is called on panic.
 #[cfg(not(test))]
 #[panic_handler]
-fn panic_handler(info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop {}
+    vailo::hlt_loop();
 }
